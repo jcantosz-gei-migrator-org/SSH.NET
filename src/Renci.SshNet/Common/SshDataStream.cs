@@ -210,7 +210,8 @@ namespace Renci.SshNet.Common
 #if NETSTANDARD2_1 || NET
             return new BigInteger(data, isBigEndian: true);
 #else
-            return new BigInteger(data.Reverse());
+            Array.Reverse(data);
+            return new BigInteger(data);
 #endif
         }
 
