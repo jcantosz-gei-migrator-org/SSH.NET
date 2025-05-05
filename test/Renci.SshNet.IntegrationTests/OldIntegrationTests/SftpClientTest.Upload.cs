@@ -53,6 +53,49 @@ namespace Renci.SshNet.IntegrationTests.OldIntegrationTests
 
         [TestMethod]
         [TestCategory("Sftp")]
+        public async Task Test_Sftp_Upload_And_Download_Async_1MB_File()
+        {
+            RemoveAllFiles();
+
+            using (var sftp = new SftpClient(SshServerHostName, SshServerPort, User.UserName, User.Password))
+            {
+                await sftp.ConnectAsync(CancellationToken.None).ConfigureAwait(false);
+
+                var uploadedFileName = Path.GetTempFileName();
+                var remoteFileName = Path.GetRandomFileName();
+
+                CreateTestFile(uploadedFileName, 1);
+
+                //  Calculate has value
+                var uploadedHash = CalculateMD5(uploadedFileName);
+
+                using (var file = File.OpenRead(uploadedFileName))
+                {
+                    await sftp.UploadFileAsync(file, remoteFileName).ConfigureAwait(false);
+                }
+
+                var downloadedFileName = Path.GetTempFileName();
+
+                using (var file = File.OpenWrite(downloadedFileName))
+                {
+                    await sftp.DownloadFileAsync(remoteFileName, file).ConfigureAwait(false);
+                }
+
+                var downloadedHash = CalculateMD5(downloadedFileName);
+
+                await sftp.DeleteFileAsync(remoteFileName, CancellationToken.None).ConfigureAwait(false);
+
+                File.Delete(uploadedFileName);
+                File.Delete(downloadedFileName);
+
+                sftp.Disconnect();
+
+                Assert.AreEqual(uploadedHash, downloadedHash);
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Sftp")]
         public void Test_Sftp_Upload_Forbidden()
         {
             using (var sftp = new SftpClient(SshServerHostName, SshServerPort, User.UserName, User.Password))
@@ -70,6 +113,28 @@ namespace Renci.SshNet.IntegrationTests.OldIntegrationTests
                 }
 
                 sftp.Disconnect();
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Sftp")]
+        public async Task Test_Sftp_UploadAsync_Cancellation_Requested()
+        {
+            using (var sftp = new SftpClient(SshServerHostName, SshServerPort, User.UserName, User.Password))
+            {
+                await sftp.ConnectAsync(CancellationToken.None);
+
+                var uploadedFileName = Path.GetTempFileName();
+                var remoteFileName = "/root/1";
+
+                CreateTestFile(uploadedFileName, 1);
+
+                var cancelledToken = new CancellationToken(true);
+
+                using (var file = File.OpenRead(uploadedFileName))
+                {
+                    await Assert.ThrowsAsync<OperationCanceledException>(() => sftp.UploadFileAsync(file, remoteFileName, cancelledToken));
+                }
             }
         }
 
