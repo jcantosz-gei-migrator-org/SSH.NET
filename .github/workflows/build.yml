@@ -15,7 +15,7 @@ jobs:
         fetch-depth: 0 # needed for Nerdbank.GitVersioning
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
 
     - name: Build Unit Tests .NET
       run: dotnet build -f net9.0 test/Renci.SshNet.Tests/
@@ -62,7 +62,7 @@ jobs:
         fetch-depth: 0 # needed for Nerdbank.GitVersioning
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
 
     - name: Build Solution
       run: dotnet build Renci.SshNet.sln
@@ -113,7 +113,7 @@ jobs:
         fetch-depth: 0 # needed for Nerdbank.GitVersioning
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
 
     - name: Setup WSL2
       uses: Vampire/setup-wsl@f40fb59d850112c9a292b0218bca8271305b9127 # v5.0.0
